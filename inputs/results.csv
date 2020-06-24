@@ -1,0 +1,55 @@
+,Scenario,Layer,Name,Location,Capacity,Opex,Capex,Rock,Unit,TBT,Unit,MT,Unit,Sulfur,Unit,ACS,Unit,ACP,Unit
+2021,1,Mine,Benguerrir,Benguerrir,100,200,0,40,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2022,1,Mine,Benguerrir,Benguerrir,100,210,0,45,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2023,1,Mine,Benguerrir,Benguerrir,150,220,10000,50,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2021,1,Mine,Tassaout,Tassaout,50,100,0,20,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2022,1,Mine,Tassaout,Tassaout,50,101,15000,15,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2023,1,Mine,Tassaout,Tassaout,50,102,10000,22,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2021,1,Mine,Nzalat,Nzalat,150,480,20000,90,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2022,1,Mine,Nzalat,Nzalat,150,500,0,99,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2023,1,Mine,Nzalat,Nzalat,150,550,10000,89,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2021,1,Beneficiation,BG WP,Ben Guerrir,80,20,0,40,tonne,30,tonne,4,tonne,nan,nan,nan,nan,nan,nan
+2022,1,Beneficiation,BG WP,Ben Guerrir,80,21,0,45,tonne,25,tonne,10,tonne,nan,nan,nan,nan,nan,nan
+2023,1,Beneficiation,BG WP,Ben Guerrir,80,22,1000,50,tonne,32,tonne,5,tonne,nan,nan,nan,nan,nan,nan
+2021,1,Beneficiation,Youssoufia Benef,Youssoufia,120,480,2000,45,tonne,25,tonne,3,tonne,nan,nan,nan,nan,nan,nan
+2022,1,Beneficiation,Youssoufia Benef,Youssoufia,120,500,1000,48,tonne,26,tonne,1,tonne,nan,nan,nan,nan,nan,nan
+2023,1,Beneficiation,Youssoufia Benef,Youssoufia,120,550,0,40,tonne,19,tonne,1,tonne,nan,nan,nan,nan,nan,nan
+2021,1,SAP,SAP2,Mzinda,50,48,2000,nan,nan,nan,nan,nan,nan,50,tonne,40,tonne,nan,nan
+2022,1,SAP,SAP2,Mzinda,50,50,1000,nan,nan,nan,nan,nan,nan,50,tonne,40,tonne,nan,nan
+2023,1,SAP,SAP2,Mzinda,50,55,1000,nan,nan,nan,nan,nan,nan,50,tonne,40,tonne,nan,nan
+2021,1,PAP,PAP1,Mzinda,300,480,2000,nan,nan,55,tonne,7,tonne,nan,nan,40,tonne,100,tonne
+2022,1,PAP,PAP1,Mzinda,300,500,1000,nan,nan,51,tonne,11,tonne,nan,nan,40,tonne,110,tonne
+2023,1,PAP,PAP1,Mzinda,300,550,0,nan,nan,51,tonne,6,tonne,nan,nan,40,tonne,105,tonne
+2021,20,Mine,Benguerrir,Benguerrir,200,400,0,80,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2022,20,Mine,Benguerrir,Benguerrir,200,420,0,90,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2023,20,Mine,Benguerrir,Benguerrir,300,440,20000,100,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2021,20,Mine,Tassaout,Tassaout,100,200,0,40,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2022,20,Mine,Tassaout,Tassaout,100,202,30000,30,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2023,20,Mine,Tassaout,Tassaout,100,204,20000,44,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2021,20,Beneficiation,BG WP,Ben Guerrir,160,40,0,80,tonne,60,tonne,8,tonne,nan,nan,nan,nan,nan,nan
+2022,20,Beneficiation,BG WP,Ben Guerrir,160,42,0,90,tonne,50,tonne,20,tonne,nan,nan,nan,nan,nan,nan
+2023,20,Beneficiation,BG WP,Ben Guerrir,160,44,2000,100,tonne,64,tonne,10,tonne,nan,nan,nan,nan,nan,nan
+2021,20,SAP,SAP2,Mzinda,100,96,4000,nan,nan,nan,nan,nan,nan,100,tonne,80,tonne,nan,nan
+2022,20,SAP,SAP2,Mzinda,100,100,2000,nan,nan,nan,nan,nan,nan,100,tonne,80,tonne,nan,nan
+2023,20,SAP,SAP2,Mzinda,100,110,2000,nan,nan,nan,nan,nan,nan,100,tonne,80,tonne,nan,nan
+2021,20,PAP,PAP SAFI EXISTING ,Safi,600,960,4000,nan,nan,110,tonne,14,tonne,nan,nan,80,tonne,200,tonne
+2022,20,PAP,PAP SAFI EXISTING ,Safi,600,1000,2000,nan,nan,102,tonne,22,tonne,nan,nan,80,tonne,220,tonne
+2023,20,PAP,PAP SAFI EXISTING ,Safi,600,1100,0,nan,nan,102,tonne,12,tonne,nan,nan,80,tonne,210,tonne
+2021,333,Mine,Benguerrir,Benguerrir,133.3333333,266.6666667,0,53.33333333,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2022,333,Mine,Benguerrir,Benguerrir,133.3333333,280,0,60,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2023,333,Mine,Benguerrir,Benguerrir,200,293.3333333,13333.33333,66.66666667,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2021,333,Mine,Nzalat,Nzalat,106.6666667,26.66666667,0,53.33333333,tonne,40,tonne,5.333333333,tonne,nan,nan,nan,nan,nan,nan
+2022,333,Mine,Nzalat,Nzalat,106.6666667,28,0,60,tonne,33.33333333,tonne,13.33333333,tonne,nan,nan,nan,nan,nan,nan
+2023,333,Mine,Nzalat,Nzalat,106.6666667,29.33333333,1333.333333,66.66666667,tonne,42.66666667,tonne,6.666666667,tonne,nan,nan,nan,nan,nan,nan
+2021,333,Beneficiation,BG WP,Ben Guerrir,66.66666667,64,2666.666667,nan,nan,nan,nan,nan,nan,66.66666667,tonne,53.33333333,tonne,nan,nan
+2022,333,Beneficiation,BG WP,Ben Guerrir,66.66666667,66.66666667,1333.333333,nan,nan,nan,nan,nan,nan,66.66666667,tonne,53.33333333,tonne,nan,nan
+2023,333,Beneficiation,BG WP,Ben Guerrir,66.66666667,73.33333333,1333.333333,nan,nan,nan,nan,nan,nan,66.66666667,tonne,53.33333333,tonne,nan,nan
+2021,333,Beneficiation,Youssoufia Benef,Youssoufia,400,640,2666.666667,nan,nan,73.33333333,tonne,9.333333333,tonne,nan,nan,53.33333333,tonne,133.3333333,tonne
+2022,333,Beneficiation,Youssoufia Benef,Youssoufia,400,666.6666667,1333.333333,nan,nan,68,tonne,14.66666667,tonne,nan,nan,53.33333333,tonne,146.6666667,tonne
+2023,333,Beneficiation,Youssoufia Benef,Youssoufia,400,733.3333333,0,nan,nan,68,tonne,8,tonne,nan,nan,53.33333333,tonne,140,tonne
+2021,333,SAP,8,Safi,88.88888889,177.7777778,0,35.55555556,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2022,333,SAP,8,Safi,88.88888889,186.6666667,0,40,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2023,333,SAP,8,Safi,133.3333333,195.5555556,8888.888889,44.44444444,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2021,333,PAP,8,Safi,44.44444444,88.88888889,0,17.77777778,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2022,333,PAP,8,Safi,44.44444444,89.77777778,13333.33333,13.33333333,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan
+2023,333,PAP,8,Safi,44.44444444,90.66666667,8888.888889,19.55555556,tonne,nan,nan,nan,nan,nan,nan,nan,nan,nan,nan

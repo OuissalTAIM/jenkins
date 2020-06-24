@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="CheckWorkerApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+
+    <script src="/static/js/angular.min.js"></script>
+
+    <script src="/static/js/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+
+        <style>
+            .dot {
+              height: 12px;
+              width: 12px;
+              background-color: green;
+              border-radius: 50%;
+              display: inline-block;
+              margin-top: 10px;
+            }
+            .btn{
+                width: 120px;
+            }
+
+            td{
+                padding: 2px !important;
+            }
+            .progress {
+                margin-bottom: 0px;
+             }
+             .page-header{
+                background-color: #0D0B64;
+                color: #FFFFFF;
+                min-height: 55px;
+             }
+             .page-header h1{
+                margin: auto;
+                line-height: 51px;
+                vertical-align: middle;
+             }
+             .form-group {
+                margin-bottom: 5px !important;
+            }
+            </style>
+
+    <script>
+        (function () {
+          'use strict';
+
+          angular.module('CheckWorkerApp', ['ui.bootstrap'])
+           .directive('ngConfirmClick', [
+                function(){
+                    return {
+                        link: function (scope, element, attr) {
+                            var msg = attr.ngConfirmClick || "Are you sure?";
+                            var clickAction = attr.confirmedClick;
+                            element.bind('click',function (event) {
+                                if ( window.confirm(msg) ) {
+                                    scope.$eval(clickAction)
+                                }
+                            });
+                        }
+                    };
+            }])
+
+          .filter('trustUrl', function ($sce) {
+            return function(url) {
+              return $sce.trustAsResourceUrl(url);
+            };
+          })
+
+
+
+
+
+          .controller('CheckWorkeController', ['$scope', '$log','$http', '$interval',
+            function($scope, $log, $http, $interval) {
+
+
+            $scope.cycle = {{ cycle|tojson|safe }};
+            $scope.allCycle = [0, 1, 2, 3];
+
+
+            // for best scenarios
+            $scope.step = 1;
+
+            // workflow to start service
+
+            $scope.simulator = false
+            $scope.serviceAddWorker = true
+            $scope.globalResult = false;
+            $scope.detailedResult = false;
+
+
+            $scope.counter = {}
+            $scope.total_scenario = {}
+
+            $scope.db_name_worker = {}
+
+            $scope.in_progress = false
+
+            $scope.numberOfWorker = 0
+            var numberOfWorker = 0
+            $scope.maxWorker = 3
+            $scope.loadingWorker = false;
+            $scope.best_scenarios_status = {}
+
+
+            $scope.queue_simulate = {{ queue_simulate|tojson|safe }}
+
+            $scope.dataBases = {{ db_names|tojson|safe }}
+            //$scope.consumers = {{ consumers|tojson|safe }}
+            //$scope.count_worker = 0;
+            $scope.count_worker = {{ count_worker|tojson|safe }}
+            $scope.logistics_lp = {{ logistics_lp|tojson|safe }}
+
+
+
+            $scope.canvas_url = {{ canvas_url|tojson|safe }}
+
+
+
+            // worker results
+            $scope.global_result_worker = {{ global_result_worker|tojson|safe }}
+            $scope.detailed_result_worker = {{ detailed_result_worker|tojson|safe }}
+
+
+
+
+
+            $scope.dashboard_url = {{ dashboard_url|tojson|safe }}
+             $scope.images = {{ images|tojson|safe }}
+             $scope.assets_path = {{ assets_path|tojson|safe }}
+
+
+            $scope.nbPerPage = {{ nb_pr_page|tojson|safe }};
+
+            $scope.databaseSelected = $scope.dataBases[0]
+
+            $scope.best_scenarios_status[$scope.databaseSelected] = 0
+
+
+            // init status for earch service if already started
+            $scope.init = function(status){
+                if(status == 0){
+                    $scope.serviceDataBase = true;
+                    $scope.simulator = true;
+                    $scope.serviceAddWorker = false
+
+                }
+            }
+
+
+
+            // get history of best scenarios
+            $scope.currentPageBest = 1
+            $scope.getHistoryBest = function(){
+                $http({
+                      method: 'POST',
+                      url: '/get-history/best',
+                      data: {'current_page': $scope.currentPageBest, 'nb_pr_page': $scope.nbPerPage}
+                  }).then(function(response) {
+
+                    if(response.data.total_items){
+                        $scope.totalItemsBest = response.data.total_items;
+                        $scope.listBest = response.data.listHistory
+
+                    }else{
+                        console.log(response.data)
+                    }
+
+                 })
+            }
+
+
+
+            // function to start service database
+            $scope.startService = function(){
+
+
+                $http({
+                      method: 'POST',
+                      url: '/start-service',
+                      data: {'db_name': $scope.databaseSelected}
+                    }).then(function(response) {
+                    console.log(response)
+                    if(response.data.status == 0){
+                        $scope.simulator = true
+                        $scope.serviceDataBase = true
+                        $scope.serviceAddWorker = false
+                        //alert("service started")
+                    }else{
+
+                        alert("service failed")
+                    }
+                    })
+            }
+
+            //function to start global result worker
+            $scope.globalResultWorker = function(){
+
+
+
+                $http({
+                      method: 'POST',
+                      url: '/start-global-result-worker',
+                      data: {'db_name': $scope.databaseSelected}
+                    }).then(function(response) {
+                    $scope.globalResult = response.data.status;
+                    $scope.global_result_worker = response.data.global_result_worker
+
+                    })
+            }
+
+            //function to start detailed result worker
+            $scope.detailedResultWorker = function(){
+
+                $http({
+                      method: 'POST',
+                      url: '/start-detailed-result-worker',
+                      data: {'db_name': $scope.databaseSelected}
+                    }).then(function(response) {
+                        $scope.detailed_result_worker = response.data.detailed_result_worker
+
+                    })
+            }
+
+             // function to start server simulator
+            $scope.loaderSimulate = false;
+            $scope.startSimulator = function(){
+
+
+
+            $scope.loaderSimulate = true;
+                $http({
+                      method: 'POST',
+                      url: '/start-simulator',
+                      data:{'cycle': $scope.cycle, 'db_name': $scope.databaseSelected,
+                            'logistics_lp': $scope.logistics_lp}
+                  }).then(function(response) {
+
+
+                        if(response.data.status == 0){
+                               $scope.simulatorOK = true
+
+                            //alert("simulator started")
+                        }else{
+
+                            alert("simulator failed")
+                        }
+                 })
+            }
+
+            // function add worker
+            $scope.textWorker="Add worker"
+            $scope.addWorker = function(){
+                $scope.loadingWorker = false
+                $scope.textWorker="Loading..."
+
+
+
+                $http({
+                      method: 'POST',
+                      url: '/add-worker',
+                      data: {'db_name': $scope.databaseSelected}
+                  }).then(function(response) {
+                    console.log(response)
+                    $scope.count_worker = response.data.count_worker
+                    if(response.data.status == 0){
+                        $scope.textWorker="Add worker"
+                        $scope.loadingWorker = true;
+
+                        $scope.numberOfWorker = $scope.numberOfWorker + 1
+
+                    }else{
+                        $scope.textWorker="Add worker"
+                        $scope.loadingWorker = true;
+                        $scope.serviceAddWorker = true
+                         $scope.numberOfWorker = $scope.numberOfWorker + 1
+                    }
+
+                 })
+            }
+
+               $scope.mongo_bi_status = true
+              $scope.checkWorkerWithTime = function(){
+                  $http({
+                      method: 'POST',
+                      url: '/check-worker',
+                      data: {'db_name': $scope.databaseSelected}
+                    }).then(function(data) {
+
+                            $scope.consumers =  data.data.consumers;
+                            $scope.list_queues = data.data.list_queues;
+                            $scope.dataBases = data.data.db_names;
+                            $scope.best_scenarios_status = data.data.best_scenarios_status;
+
+                             $scope.global_result_worker = data.data.worker_global_result;
+                             $scope.detailed_result_worker = data.data.worker_detailed_result;
+
+                             $scope.count_worker = data.data.count_worker;
+                            /*
+                            if($scope.best_scenarios_status[$scope.databaseSelected] == 0){
+                                   $scope.getHistoryBest()
+
+
+
+                            }*/
+                            //$scope.workersInfoHistory = data.data.workersInfoHistory
+
+
+                            if(data.data.workersInfo){
+
+
+                               var workersInfo = data.data.workersInfo;
+
+
+
+                               $scope.consumers_list = data.data.consumers
+
+                               var phases = Object.keys(workersInfo);
+
+                               angular.forEach(phases, function(phase, current_worker){
+
+
+                                     if(typeof  workersInfo[phase]!== 'undefined'){
+
+                                        $scope.db_name_worker[phase] = workersInfo[phase].db_name
+
+                                        $scope.maxWorker = workersInfo[phase].maxWorker
+
+                                       var progress = workersInfo[phase].progress;
+                                       $scope.counter[phase] = workersInfo[phase].counter;
+                                       $scope.total_scenario[phase] = workersInfo[phase].total_scenario;
+
+                                       $('#progress-bar-'+phase.toString()).css('width', progress+'%').attr('aria-valuenow', progress);
+                                       if(progress == '100'){
+
+                                            $('#progress-bar-'+phase.toString()+'-label').text('Completed');
+                                             $scope.getData()
+                                               $scope.loaderSimulate = false
+                                             // Launch mongo bi
+                                             if($scope.mongo_bi_status){
+                                                $scope.launchMongoBI()
+                                                $scope.mongo_bi_status = false
+                                             }
+
+
+                                            //$scope.counter[phase] = "Completed"
+
+                                       }else{
+                                        if(progress == '0'){
+                                        $('#progress-bar-'+phase.toString()+'-label').text('Loading data...');
+                                        }else{
+                                            $('#progress-bar-'+phase.toString()+'-label').text(progress+'%');
+                                        }
+
+                                       }
+
+
+                                    }
+                               })
+                             }
+
+                      });
+              }
+
+              $scope.updateCycle = function(){
+              $scope.allCycle = []
+                for (var i=0; i<$scope.cycle; i++) {
+                  $scope.allCycle.push(i.toString());
+                }
+              }
+
+              // init cycle
+              $scope.updateCycle()
+
+
+              $scope.checkWorker = function() {
+                $scope.in_progress = true
+                $scope.status = $interval($scope.checkWorkerWithTime, 10000)
+              };
+
+
+
+
+
+              $scope.stopService = function () {
+
+                 $scope.loaderStop = true;
+
+                $http({
+                          method: 'POST',
+                          url: '/stop-services',
+                          data: {'db_name': $scope.databaseSelected}
+                      }).then(function(response) {
+                        $scope.loaderStop = false;
+
+
+                        })
+            };
+
+
+
+            // Launch tableau desktop
+            $scope.launchMongoBI = function(){
+                 $http({
+                          method: 'POST',
+                          url: '/launch-tableau',
+                          data: {'db_name': $scope.databaseSelected}
+                      }).then(function(response) {
+                        console.log(response)
+                        if(response.data.status == 0){
+
+
+                            console.log("Service started")
+                        }else{
+                            console.log("Failed to start tableau")
+                        }
+
+                     })
+
+            }
+            // Open canvas
+            $scope.openCanvas = function(){
+                 $http({
+                          method: 'POST',
+                          url: '/open-canvas'
+                      }).then(function(response) {
+
+                        if(response.data.status == 0){
+
+
+                            console.log("Service started")
+                        }else{
+                            console.log("Failed to start tableau")
+                        }
+
+                     })
+
+            }
+
+            // function start all services
+            $scope.startAllServices = function(){
+
+
+                // Launch service data
+                $scope.startService()
+
+
+                // Launch service result worker global
+                $scope.globalResultWorker()
+
+
+                // Launch service result worker detailed
+                $scope.detailedResultWorker()
+
+
+                $scope.addWorker()
+
+
+                //Launch simulation
+                //$scope.startSimulator()
+
+
+
+
+
+            }
+
+
+            $scope.startAllServices()
+
+
+            // Purge queues
+            $scope.purge = function(q_name){
+
+            $scope.loaderPurge = true
+                 $http({
+                          method: 'POST',
+                          url: '/purge'
+                      }).then(function(response) {
+                        $scope.loaderPurge = false
+                        if(response.data.status == 0){
+                            console.log(response.data.status)
+                        }else{
+                            alert("failed to load")
+                        }
+
+                     })
+
+            }
+
+
+
+
+            // Purge queues
+            $scope.bestScenarios = function(){
+                 $http({
+                          method: 'POST',
+                          url: '/best-scenarios',
+                          data: {'db_name': $scope.databaseSelected, 'step': $scope.step}
+                      }).then(function(response) {
+                        console.log(response)
+                        if(response.data.status == 0){
+                            $scope.checkWorkerWithTime()
+                            $scope.getHistoryBest()
+
+                        }else{
+                            alert("failed to load")
+                        }
+
+                     })
+
+            }
+
+
+            //Init status
+            $scope.checkWorkerWithTime()
+
+            // launch timer to check status of progress bar
+            $scope.checkWorker()
+
+              // ======================== pagination system ========================
+
+            $scope.getData = function(){
+
+                 $http({
+                          method: 'POST',
+                          url: '/get-history/task',
+                          data: {'current_page': $scope.currentPage, 'nb_pr_page': $scope.nbPerPage}
+                      }).then(function(response) {
+
+                        if(response.data.total_items){
+                            $scope.totalItems = response.data.total_items;
+                            $scope.workersInfoHistory = response.data.listHistory
+
+                        }else{
+                            console.log(response.data)
+                        }
+
+                     })
+
+
+
+            }
+
+
+
+
+
+            $scope.getHistoryBest()
+
+
+
+
+
+
+
+
+
+
+            $scope.currentPage = 1;
+             $scope.maxSize = 5;
+
+             $scope.setPage = function (pageNo) {
+                $scope.currentPage = pageNo;
+
+              };//end controller
+
+              $scope.pageChanged = function(context) {
+
+              if(context == 'best'){
+                $scope.getHistoryBest()
+              }else{
+                $scope.getData()
+              }
+
+              };
+
+              $scope.getData()
+
+
+
+
+
+            }
+          ])
+
+        }());
+    </script>
+
+
+</head>
+<body>
+
+
+
+    <div class="container" ng-controller="CheckWorkeController" ng-init="init('{{service_status}}')">
+         <div class="page-header">
+              <center><h1>Mine2Farm Monitor</h1></center>
+         </div>
+
+        <!--<div ng-repeat="url_img in images">-->
+            <!--<img src="{{url_img}}" style="max-width:60px">-->
+        <!--</div>-->
+
+
+        <!--<div style="float:right;position: relative;bottom: 27px;">-->
+            <!--<a href="#" ng-click="launchTableau()" class="btn btn-link">Update dashboard</a>-->
+        <!--</div>-->
+
+        <div style="float:right;position: relative;bottom: 27px;">
+             <a href="/open-canvas"  class="btn btn-link">Canvas</a>
+        </div>
+
+
+
+        <form>
+            {% raw %}
+            <div class="panel panel-success">
+              <div class="panel-heading">Parameter</div>
+              <div class="panel-body">
+
+
+                    <div class="row">
+                        <div class="col-md-2">
+
+                             <p class="text-dark">Cycle: {{ cycle }}</p>
+                             <p class="text-dark">#Workers: {{ count_worker }}</p>
+                        </div>
+                         <div class="col-md-4">
+
+                             <p  ng-class="{'text-success': serviceDataBase, 'text-danger':!serviceDataBase}">Service data:
+                                 <i ng-show="serviceDataBase" class="fa fa-check" aria-hidden="true"></i>
+                                 <i ng-show="!serviceDataBase" class="fa fa-close" aria-hidden="true"></i>
+                             </p>
+                             <p  ng-class="{'text-success': global_result_worker == 0, 'text-danger':global_result_worker != 0}">Global result worker:
+                                 <i ng-show="global_result_worker == 0" class="fa fa-check" aria-hidden="true"></i>
+                                 <i ng-show="global_result_worker != 0" class="fa fa-close" aria-hidden="true"></i>
+                             </p>
+                             <p  ng-class="{'text-success': detailed_result_worker == 0, 'text-danger':detailed_result_worker != 0}">Detailed result worker:
+                                 <i ng-show="detailed_result_worker == 0" class="fa fa-check" aria-hidden="true"></i>
+                                 <i ng-show="detailed_result_worker != 0" class="fa fa-close" aria-hidden="true"></i>
+                             </p>
+                             <p  ng-class="{'text-success': serviceDataBase, 'text-danger':list_queues[queue_simulate] == 0}">Simulator:
+                                 <i ng-show="list_queues[queue_simulate] != 0" class="fa fa-check" aria-hidden="true"></i>
+                                 <i ng-show="list_queues[queue_simulate] == 0" class="fa fa-close" aria-hidden="true"></i>
+                             </p>
+
+                             <p  ng-class="{'text-success': count_worker == cycle, 'text-danger':count_worker == 0, 'text-warning': (count_worker < cycle && count_worker > 0)}">Workers:
+                                 <i ng-show="count_worker == cycle" class="fa fa-check" aria-hidden="true"></i>
+                                 <i ng-show="count_worker == 0" class="fa fa-close" aria-hidden="true"></i>
+                                 <i ng-show="count_worker < cycle && count_worker > 0" class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                             </p>
+
+                            <!--<input type="number" ng-model="cycle" min="1" max="100" class="form-control" id="cycle" aria-describedby="cycle" placeholder="cycle" ng-change="updateCycle()">-->
+
+                        </div>
+
+                    <div class="col-md-6">
+
+                      <div class="form-group row">
+
+
+
+                        <label for="databaseId" class="col-md-2 col-form-label"> Database: </label>
+                         <div class="col-md-4">
+                              <select name="repeatSelect" id="databaseId" ng-model="databaseSelected" class="form-control" ng-change="checkWorkerWithTime()">
+                                <option ng-repeat="base in dataBases" value="{{base}}">{{base}}</option>
+                                </select>
+                         </div>
+
+
+                       </div>
+
+                        <div class="form-group row">
+                            <label for="stepId" class="col-md-2 col-form-label"> Quantile(%): </label>
+                            <div class="col-md-4">
+                                <input type="number" ng-model="step" min="1" max="100" class="form-control" id="stepId" aria-describedby="step" placeholder="Quantile step(%)">
+                            </div>
+                         </div>
+                        <div class="form-group row">
+
+                         <div class="custom-control custom-checkbox" style="margin-left: 16px;">
+                                <input type="checkbox" class="custom-control-input " id="defaultUnchecked" ng-model="logistics_lp">
+                                <label class="custom-control-label" for="defaultUnchecked">Logistics</label>
+                          </div>
+                        </div>
+
+                    </div>
+                    </div>
+
+                  </div>
+                </div>
+
+
+            <button type="button" class="btn btn-secondary" ng-click="startSimulator()" ng-disabled="loaderSimulate || list_queues[queue_simulate] != 0 || list_queues[queue_simulate] == undefined || loaderStop ">Simulate</button>
+
+             <button type="button" class="btn btn-secondary" ng-click="bestScenarios()" ng-disabled="best_scenarios_status[databaseSelected] == -1 || loaderStop">
+                 Best scenarios
+
+                 </button>
+
+
+            <button type="button" class="btn btn-secondary" ng-confirm-click="Would you like to purge queues?" confirmed-click="purge()" ng-disabled="loaderPurge || loaderStop">Purge</button>
+
+
+
+            <button type="button" class="btn btn-danger" ng-confirm-click="Would you like to stop all services?" confirmed-click="stopService()" ng-disabled="loaderStop">Stop</button>
+        {% endraw %}
+
+        </form>
+
+
+        <br>
+        {% raw %}
+        <div class="panel panel-success">
+              <div class="panel-heading">Task monitor</div>
+
+
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                            <th class="text-center" scope="col" width="10%">Database</th>
+                            <th class="text-center" scope="col" width="4%">Phase</th>
+
+                            <th class="text-center" scope="col" width="20%">#Scenarios</th>
+                            <th class="text-center" scope="col" width="20%">Current step</th>
+                            <th class="text-center" scope="col">Progress</th>
+
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr ng-repeat="n in allCycle" >
+                            <td style="text-align:center;vertical-align: middle;">{{ db_name_worker[n] }}</td>
+                            <td style="text-align:center;vertical-align: middle;">{{ n }} / {{ cycle }}</td>
+                            <td style="text-align:right;vertical-align: middle;padding-right: 10px !important;">{{ total_scenario[n] | number }}</td>
+                            <td style="text-align:right;vertical-align: middle;padding-right: 10px !important;">{{ counter[n] | number }}</td>
+
+                            <td style="text-align:center;vertical-align: middle;">
+                              <div class="progress" style="width: 100%;">
+                                <div class="progress-bar progress-bar-striped active" id="progress-bar-{{n}}" role="progressbar"
+                                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                    <span id="progress-bar-{{n}}-label"></span>
+                                </div>
+                              </div>
+
+                            </td>
+
+
+                        </tr>
+
+                      </tbody>
+                    </table>
+
+        </div>
+        <div class="panel panel-success">
+          <div class="panel-heading">History monitor</div>
+
+              <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                        <th class="text-center" scope="col" width="10%">Database</th>
+                        <th class="text-center" scope="col" width="4%">Phase</th>
+
+                        <th class="text-center" scope="col" width="10%">#Scenarios</th>
+                        <th class="text-center" scope="col">State</th>
+                        <th class="text-center" scope="col">Start date</th>
+                        <th class="text-center" scope="col">End date</th>
+                        <th class="text-center" scope="col" width="40%">Message</th>
+
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="task in workersInfoHistory" >
+                        <td style="text-align:center;vertical-align: middle;">{{ task.db_name }}</td>
+                        <td style="text-align:center;vertical-align: middle;">{{ task.phase }} / {{ cycle }}</td>
+                        <td style="text-align:right;vertical-align: middle;padding-right: 10px !important;">{{ task.total_scenario | number}}</td>
+                        <td style="text-align:center;vertical-align: middle;" >
+                            <span ng-if="task.status == 0" class="text-success">SUCCESS</span>
+                            <span ng-if="task.status == -1" class="text-danger">FAILED</span>
+                        </td>
+
+                        <td style="text-align:center;vertical-align: middle;">{{ task.time_start }}</td>
+                        <td style="text-align:center;vertical-align: middle;">{{ task.time_end }}</td>
+                        <td style="text-align:center;vertical-align: middle;" class="bg-success" ng-class="{'bg-danger': task.status == -1}">
+                            {{ task.message }}
+                        </td>
+
+
+                    </tr>
+
+                  </tbody>
+              </table>
+
+
+
+
+        </div>
+        <!-- pagination for task history  -->
+         <ul uib-pagination total-items="totalItems" items-per-page="nbPerPage" ng-model="currentPage" max-size="maxSize" class="pagination-sm" boundary-link-numbers="true" rotate="false" ng-change="pageChanged()"></ul>
+
+        <hr/>
+        <div class="panel panel-success">
+          <div class="panel-heading">Best scenarios status</div>
+
+              <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                        <th class="text-center" scope="col" width="10%">Database</th>
+                        <th class="text-center" scope="col">Global count</th>
+                        <th class="text-center" scope="col">Detailed count</th>
+                        <th class="text-center" scope="col" >Quantile step</th>
+                        <th class="text-center" scope="col" width="10%">Status</th>
+                        <th class="text-center" scope="col" >Start date</th>
+                        <th class="text-center" scope="col">End date</th>
+
+                    </tr>
+                  </thead>
+                  <tbody>
+
+                   <tr ng-repeat="best_scenarios in listBest" ng-class="{'bg-info': best_scenarios.status == -1}">
+                       <td style="text-align:center;vertical-align: middle;">{{ best_scenarios.db_name }}</td>
+                       <td style="text-align:right;vertical-align: middle;padding-right: 10px !important;"> {{ best_scenarios.global_count | number }} </td>
+                        <td style="text-align:right;vertical-align: middle;padding-right: 10px !important;"> {{ best_scenarios.detailed_count | number }} </td>
+                       <td style="text-align:center;vertical-align: middle;">{{ best_scenarios.quantile_step }}</td>
+
+                       <td style="text-align:center;vertical-align: middle;">
+                           <span ng-if="best_scenarios.status == 0">Completed</span>
+                           <span ng-if="best_scenarios.status == -1">Running</span>
+                       </td>
+
+                        <td style="text-align:center;vertical-align: middle;">{{  best_scenarios.time_start }}</td>
+                        <td style="text-align:center;vertical-align: middle;">{{ best_scenarios.time_end }}</td>
+                   </tr>
+                  </tbody>
+              </table>
+
+
+
+
+        </div>
+        <!-- pagination for best scenarios -->
+         <ul uib-pagination total-items="totalItemsBest" items-per-page="nbPerPage"
+             ng-model="currentPageBest" max-size="maxSize" class="pagination-sm"
+             boundary-link-numbers="true" rotate="false" ng-change="pageChanged('best')"></ul>
+
+        <hr>
+
+        <div class="panel panel-success">
+          <div class="panel-heading">Worker monitor</div>
+
+
+             <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                        <th class="text-center" scope="col" width="10%">Queue name </th>
+                        <th class="text-center" scope="col" width="4%">Channel pid</th>
+
+                        <th class="text-center" scope="col" width="4%">State</th>
+
+                    </tr>
+                  </thead>
+                  <tbody>
+                        <tr ng-repeat="consumer in consumers" >
+                          <td style="text-align:center;vertical-align: middle;">{{ consumer['queue_name'] }}</td>
+                          <td style="text-align:center;vertical-align: middle;">{{ consumer['channel_pid'] }}</td>
+                          <td><span ng-if="consumer['active'] == 'true'" class="dot">&nbsp;</span></span><span> Running</span></td>
+                        </tr>
+                   </tbody>
+                </table>
+
+        </div>
+
+
+
+
+        <hr>
+        <div class="panel panel-success">
+            <div class="panel-heading">Queue monitor</div>
+
+                <!--les messages-->
+                 <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                        <th class="text-center" scope="col" width="10%">Queue name </th>
+                        <th class="text-center" scope="col" width="4%">Queue size</th>
+                    </tr>
+                  </thead>
+                   <tbody>
+                     <tr ng-repeat="(q_name, nb_msg) in list_queues">
+                      <td style="text-align:center;vertical-align: middle;">{{ q_name }}</td>
+                      <td style="text-align:center;vertical-align: middle;">{{ nb_msg }}</td>
+                    </tr>
+                   </tbody>
+                </table>
+
+        </div>
+
+        {% endraw %}
+
+         <!--<div class="progress" style="width: 50%; margin: 50px;">-->
+            <!--<div class="progress-bar progress-bar-striped active" id="progress-bar-2" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">-->
+                <!--<span id="progress-bar-2-label"></span>-->
+            <!--</div>-->
+
+        <!--</div>-->
+    </div>
+</body>
+<script src="/static/js/angular-animate.min.js"></script>
+<script src="/static/js//angular-sanitize.min.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/js/ui-bootstrap-tpls-2.5.0.min.js"></script>
+
+
+</html>
